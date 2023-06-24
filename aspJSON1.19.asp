@@ -91,6 +91,21 @@ Class aspJSON
 		Next
 	End Sub
 
+	public sub loadRs(byref rss)
+		Dim level(99)
+		aj_currentlevel = 1
+		Set level(aj_currentlevel) = data
+		while rss.recordcount>0 and not rss.eof
+			level(aj_currentlevel).add "ID"&rss("ID"), stops.Collection()
+			With level(aj_currentlevel).item("ID"&rss("ID"))
+				for each field in rss.fields
+					.Add field.Name, field.value
+				next
+			end with
+			rss.movenext
+		wend
+	end sub
+
 	Public Function Collection()
 		Set Collection = Server.CreateObject("Scripting.Dictionary")
 	End Function
