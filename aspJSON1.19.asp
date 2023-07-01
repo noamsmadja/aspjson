@@ -169,6 +169,79 @@ Class aspJSON
 		JSONoutput = Left(wrap_dicttype, 1) & Chr(13) & Chr(10) & GetDict(data) & Right(wrap_dicttype, 1)
 	End Function
 
+	public sub loadRs(byref rss)
+	Dim level(99)
+			aj_currentlevel = 1
+	Set level(aj_currentlevel) = data
+	while rss.recordcount>0 and not rss.eof
+		level(aj_currentlevel).add "ID"&rss("ID"), stops.Collection()
+		With level(aj_currentlevel).item("ID"&rss("ID"))
+			for each field in rss.fields
+				.Add field.Name, field.value
+			next
+		end with
+		rss.movenext
+	wend
+	end sub
+
+public sub print_data(parameter_value)
+    response.write(parameter_value("type")&"<br><br><br>")
+end sub
+
+public function add_parameter (component_name, parameter_type, parameter_value, html)
+  comp_found=false
+  item_count = data.count
+
+  for dat_item = 0 to item_count-1
+    if data(dat_item).exists("type") and data(dat_item)("type")=component_name then
+        comp_pos = dat_item
+        comp_found=true
+    end if
+  next
+
+  if not comp_found then
+    data.Add item_count, Collection()
+    comp_pos = item_count
+      with data.item(comp_pos)
+        .add "type",component_name
+        .add "parameters", collection()
+        if parameter_type="button" then
+          .add "index",0
+          .add "sub_type",replace(parameter_value("type"),"payload","quick_reply")
+        end if
+      end with
+  end if
+  
+  param_count=data.item(comp_pos)("parameters").count
+  With data.item(comp_pos)("parameters")
+    .Add param_count, Collection()
+    with .item(param_count)
+      .Add "type", parameter_type
+      .Add parameter_type, parameter_value
+    end with
+  End With
+  if parameter_type="button" then
+    data.item(comp_pos)("index") = param_count
+    var_value = parameter_value(parameter_value("type"))
+  elseif parameter_type <> "text" then
+    var_value = parameter_value("link")
+  else
+    var_value = parameter_value
+  end if
+
+  add_parameter = wa_replace_var(html,var_value)
+end function
+
+private function wa_replace_var(html,var_value)
+  Set re = New RegExp
+  With re
+    .Pattern    = "(\{\{\d+\}\})"
+    .IgnoreCase = False
+    .Global     = False
+    wa_replace_var = .replace(html,var_value)
+  End With
+end function
+
 	Private Function GetDict(objDict)
 		Dim aj_item, aj_keyvals, aj_label, aj_dicttype
 		For Each aj_item In objDict
