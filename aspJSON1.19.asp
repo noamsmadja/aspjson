@@ -1,13 +1,13 @@
 <%
-'January 2021 - Version 1.1 by Gerrit van Kuipers
+'January 2021 - Version 1.19 by Gerrit van Kuipers
 Class aspJSON
-	Public data
+	Public data,ptype
 	Private p_JSONstring
 	Private aj_in_string, aj_in_escape, aj_i_tmp, aj_char_tmp, aj_s_tmp, aj_line_tmp, aj_line, aj_lines, aj_currentlevel, aj_currentkey, aj_currentvalue, aj_newlabel, aj_XmlHttp, aj_RegExp, aj_colonfound
 
 	Private Sub Class_Initialize()
 		Set data = Collection()
-
+			ptype = "aspjson"
 	    Set aj_RegExp = New regexp
 	    aj_RegExp.Pattern = "\s{0,}(\S{1}[\s,\S]*\S{1})\s{0,}"
 	    aj_RegExp.Global = False
@@ -90,6 +90,18 @@ Class aspJSON
 			End If
 		Next
 	End Sub
+
+	public sub Push(jsonobj) 'add an aspjson object
+		If ptype <> "aspjson" Then Err.Raise 1, "Push Error", "Not an aspjson object."
+		
+		for each key in jsonobj.Keys
+			if jsonobj.exists(key) then 'if key exists - overwrite
+				data(key)=jsonobj(key)
+			else
+				data.Add key, jsonobj(key)
+			end if
+		next
+	end sub
 
 	Public Function Collection()
 		Set Collection = Server.CreateObject("Scripting.Dictionary")
